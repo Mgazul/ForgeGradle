@@ -18,7 +18,7 @@
  * USA
  */
 
-package net.minecraftforge.gradle.patcher.tasks;
+package com.mohistmc.gradle.patcher.tasks;
 
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;

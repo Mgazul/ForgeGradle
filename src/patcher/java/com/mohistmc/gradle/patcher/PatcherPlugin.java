@@ -18,8 +18,10 @@
  * USA
  */
 
-package net.minecraftforge.gradle.patcher;
+package com.mohistmc.gradle.patcher;
 
+import com.mohistmc.gradle.patcher.tasks.FilterNewJar;
+import com.mohistmc.gradle.patcher.tasks.ReobfuscateJar;
 import net.minecraftforge.gradle.common.tasks.ApplyMappings;
 import net.minecraftforge.gradle.common.tasks.ApplyRangeMap;
 import net.minecraftforge.gradle.common.tasks.DownloadAssets;
@@ -36,7 +38,6 @@ import net.minecraftforge.gradle.common.util.BaseRepo;
 import net.minecraftforge.gradle.common.util.EnvironmentChecks;
 import net.minecraftforge.gradle.common.util.MavenArtifactDownloader;
 import net.minecraftforge.gradle.common.util.MinecraftRepo;
-import net.minecraftforge.gradle.common.util.MojangLicenseHelper;
 import net.minecraftforge.gradle.common.util.Utils;
 import net.minecraftforge.gradle.common.util.VersionJson;
 import net.minecraftforge.gradle.mcp.ChannelProvidersExtension;
@@ -49,21 +50,18 @@ import net.minecraftforge.gradle.mcp.tasks.DownloadMCPConfig;
 import net.minecraftforge.gradle.mcp.tasks.DownloadMCPMappings;
 import net.minecraftforge.gradle.mcp.tasks.GenerateSRG;
 import net.minecraftforge.gradle.mcp.tasks.SetupMCP;
-import net.minecraftforge.gradle.patcher.tasks.ApplyPatches;
-import net.minecraftforge.gradle.patcher.tasks.BakePatches;
-import net.minecraftforge.gradle.patcher.tasks.CreateExc;
-import net.minecraftforge.gradle.patcher.tasks.CreateFakeSASPatches;
-import net.minecraftforge.gradle.patcher.tasks.FilterNewJar;
-import net.minecraftforge.gradle.patcher.tasks.GenerateBinPatches;
-import net.minecraftforge.gradle.patcher.tasks.GeneratePatches;
-import net.minecraftforge.gradle.patcher.tasks.GenerateUserdevConfig;
-import net.minecraftforge.gradle.patcher.tasks.ReobfuscateJar;
+import com.mohistmc.gradle.patcher.tasks.ApplyPatches;
+import com.mohistmc.gradle.patcher.tasks.BakePatches;
+import com.mohistmc.gradle.patcher.tasks.CreateExc;
+import com.mohistmc.gradle.patcher.tasks.CreateFakeSASPatches;
+import com.mohistmc.gradle.patcher.tasks.GenerateBinPatches;
+import com.mohistmc.gradle.patcher.tasks.GeneratePatches;
+import com.mohistmc.gradle.patcher.tasks.GenerateUserdevConfig;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository.MetadataSources;
 import org.gradle.api.file.Directory;
@@ -141,8 +139,6 @@ public class PatcherPlugin implements Plugin<Project> {
         final TaskProvider<Jar> userdevJar = tasks.register("userdevJar", Jar.class);
         final TaskProvider<GenerateUserdevConfig> userdevConfig = tasks.register("userdevConfig", GenerateUserdevConfig.class, project);
         final TaskProvider<DefaultTask> release = tasks.register("release", DefaultTask.class);
-        final TaskProvider<DefaultTask> hideLicense = tasks.register(MojangLicenseHelper.HIDE_LICENSE, DefaultTask.class);
-        final TaskProvider<DefaultTask> showLicense = tasks.register(MojangLicenseHelper.SHOW_LICENSE, DefaultTask.class);
 
         //Add Known repos
         project.getRepositories().maven(e -> {
@@ -162,12 +158,6 @@ public class PatcherPlugin implements Plugin<Project> {
             e.setUrl(Utils.MOJANG_MAVEN);
             e.metadataSources(MetadataSources::artifact);
         });
-
-        hideLicense.configure(task -> task.doLast(_task ->
-                MojangLicenseHelper.hide(project, extension.getMappingChannel().get(), extension.getMappingVersion().get())));
-
-        showLicense.configure(task -> task.doLast(_task ->
-                MojangLicenseHelper.show(project, extension.getMappingChannel().get(), extension.getMappingVersion().get())));
 
         release.configure(task -> task.dependsOn(sourcesJar, universalJar, userdevJar));
 
@@ -364,7 +354,6 @@ public class PatcherPlugin implements Plugin<Project> {
                 final PatcherPlugin parentPatcherPlugin = parent.getPlugins().findPlugin(PatcherPlugin.class);
 
                 if (parentMCPPlugin != null) {
-                    MojangLicenseHelper.displayWarning(p, extension.getMappingChannel().get(), extension.getMappingVersion().get(), updateChannel, updateVersion);
                     final TaskProvider<SetupMCP> setupMCP = parentTasks.named("setupMCP", SetupMCP.class);
 
                     Provider<RegularFile> setupOutput = setupMCP.flatMap(SetupMCP::getOutput);
@@ -670,17 +659,17 @@ public class PatcherPlugin implements Plugin<Project> {
     @Nullable
     private Project getMcpParent(Project project) {
         final PatcherExtension extension = project.getExtensions().findByType(PatcherExtension.class);
-        if (extension == null || !extension.getParent().isPresent()) {
+        if (extension == null /*|| !extension.getParent().isPresent()*/) {
             return null;
         }
-        final Project parent = extension.getParent().get();
-        MCPPlugin mcp = parent.getPlugins().findPlugin(MCPPlugin.class);
-        PatcherPlugin patcher = parent.getPlugins().findPlugin(PatcherPlugin.class);
-        if (mcp != null) {
+        final Project parent = extension.getProject();
+
+        if (parent.getPlugins().hasPlugin("com.mohistmc.gradle.mcp")) {
             return parent;
-        } else if (patcher != null) {
+        } else if (parent.getPlugins().hasPlugin("com.mohistmc.gradle.patcher")) {
             return getMcpParent(parent);
         }
+        project.getLogger().error(" null 2");
         return null;
     }
 }

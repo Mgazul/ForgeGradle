@@ -19,6 +19,6 @@
  */
 
 @NonNullApi
-package net.minecraftforge.gradle.patcher.tasks;
+package com.mohistmc.gradle.patcher;
 
 import org.gradle.api.NonNullApi;

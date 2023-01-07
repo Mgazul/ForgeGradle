@@ -18,8 +18,9 @@
  * USA
  */
 
-package net.minecraftforge.gradle.patcher.tasks;
+package com.mohistmc.gradle.patcher.tasks;
 
+import com.mohistmc.gradle.patcher.PatcherExtension;
 import net.minecraftforge.gradle.common.config.MCPConfigV1.Function;
 import net.minecraftforge.gradle.common.config.UserdevConfigV1;
 import net.minecraftforge.gradle.common.config.UserdevConfigV2;
@@ -27,7 +28,6 @@ import net.minecraftforge.gradle.common.config.UserdevConfigV2.DataFunction;
 import net.minecraftforge.gradle.common.util.RunConfig;
 import net.minecraftforge.gradle.common.util.Utils;
 import net.minecraftforge.gradle.mcp.MCPExtension;
-import net.minecraftforge.gradle.patcher.PatcherExtension;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.NamedDomainObjectContainer;

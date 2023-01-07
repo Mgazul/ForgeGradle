@@ -54,7 +54,7 @@ class ListLibrariesFunction implements MCPFunction {
         File output = (File)environment.getArguments().computeIfAbsent("output", (key) -> environment.getFile("libraries.txt"));
         File bundle = (File) environment.getArguments().get("bundle");
 
-        try (FileSystem bundleFs = bundle == null ? null : FileSystems.newFileSystem(bundle.toPath(), null)) {
+        try (FileSystem bundleFs = bundle == null ? null : FileSystems.newFileSystem(bundle.toPath(), (ClassLoader) null)) {
             Set<String> artifacts;
             if (bundleFs == null) {
                 artifacts = listDownloadJsonLibraries(environment, output);
